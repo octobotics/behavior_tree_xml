@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="3">
+  <BehaviorTree ID="ReactiveBehaviorTree">
+    <ReactiveFallback _description="Execute children until one succeeds or all fail">
+      <CheckZValue plugin="CheckZValuePlugin"
+                   min="-60"/>
+      <ActivateCrawlerMode plugin="ServiceCallPlugin"
+                           service="/activate"/>
+      <Fallback _description="Try each child in order, return success on first success">
+        <FollowWeld plugin="FollowWeldPlugin"/>
+        <CheckZValuePositive60 plugin="CheckZValuePlugin"
+                               min="60"/>
+      </Fallback>
+      <StopMyActuatorMotor plugin="ServiceCallPlugin"
+                           service="/crawler_control_node/motor_stop"/>
+      <ReduceLinearActuator plugin="ReduceLinearActuatorPlugin"
+                            value="25"/>
+      <StartDCMotor plugin="ServiceCallPlugin"
+                    service="/motor_trig"/>
+      <DrawWire plugin="DrawWirePlugin"/>
+      <ReactiveFallback _description="Execute children until one succeeds or all fail">
+        <CheckWireValue plugin="CheckWireValuePlugin"
+                        min="0.024"
+                        max="0.026"/>
+        <ReactiveFallback _description="Execute children until one succeeds or all fail">
+          <StopDCMotor service="/motor_trig"
+                       plugin="ServiceCallPlugin"/>
+          <IncreaseLinearActuator plugin="IncreaseLinearActuatorPlugin"
+                                  value="25"/>
+        </ReactiveFallback>
+      </ReactiveFallback>
+      <StartMyActuatorMotor plugin="ServiceCallPlugin"
+                            service="/activate"/>
+      <FollowWeldToNegative60 plugin="FollowWeldPlugin"/>
+    </ReactiveFallback>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="ActivateCrawlerMode"
+            editable="true">
+      <inout_port name="plugin"
+                  default="ServiceCallPlugin"/>
+      <inout_port name="service"
+                  default="/activate"/>
+    </Action>
+    <Condition ID="CheckWireValue"
+               editable="true">
+      <input_port name="plugin"/>
+      <input_port name="min"/>
+      <input_port name="max"/>
+    </Condition>
+    <Condition ID="CheckZValue"
+               editable="true">
+      <input_port name="plugin"
+                  default="CheckZValuePlugin"/>
+      <input_port name="min"
+                  default="-60"/>
+    </Condition>
+    <Condition ID="CheckZValuePositive60"
+               editable="true">
+      <input_port name="plugin"
+                  default="CheckZValuePlugin"/>
+      <input_port name="min"
+                  default="60"/>
+    </Condition>
+    <Action ID="DrawWire"
+            editable="true">
+      <input_port name="plugin"/>
+    </Action>
+    <Action ID="FollowWeld"
+            editable="true">
+      <input_port name="plugin"/>
+    </Action>
+    <Action ID="FollowWeldToNegative60"
+            editable="true">
+      <input_port name="plugin"/>
+    </Action>
+    <Action ID="IncreaseLinearActuator"
+            editable="true">
+      <input_port name="plugin"/>
+      <input_port name="value"/>
+    </Action>
+    <Action ID="ReduceLinearActuator"
+            editable="true">
+      <input_port name="plugin"/>
+      <input_port name="value"/>
+    </Action>
+    <Action ID="StartDCMotor"
+            editable="true">
+      <input_port name="plugin"/>
+      <input_port name="service"/>
+    </Action>
+    <Action ID="StartMyActuatorMotor"
+            editable="true">
+      <input_port name="plugin"/>
+      <input_port name="service"/>
+    </Action>
+    <Action ID="StopDCMotor"
+            editable="true">
+      <input_port name="service"/>
+      <input_port name="plugin"/>
+    </Action>
+    <Action ID="StopMyActuatorMotor"
+            editable="true">
+      <inout_port name="plugin"
+                  default="ServiceCallPlugin"/>
+      <inout_port name="service"
+                  default="/crawler_control_node/motor_stop"/>
+    </Action>
+  </TreeNodesModel>
+
+</root>
