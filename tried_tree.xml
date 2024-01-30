@@ -1,38 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="3">
   <BehaviorTree ID="ReactiveBehaviorTree">
-    <ReactiveFallback _description="Execute children until one succeeds or all fail">
-      <CheckZValue plugin="CheckZValuePlugin"
-                   min="-60"/>
-      <ActivateCrawlerMode plugin="ServiceCallPlugin"
-                           service="/activate"/>
-      <Fallback _description="Try each child in order, return success on first success">
-        <FollowWeld plugin="FollowWeldPlugin"/>
-        <CheckZValuePositive60 plugin="CheckZValuePlugin"
-                               min="60"/>
-      </Fallback>
-      <StopMyActuatorMotor plugin="ServiceCallPlugin"
-                           service="/crawler_control_node/motor_stop"/>
-      <ReduceLinearActuator plugin="ReduceLinearActuatorPlugin"
-                            value="25"/>
-      <StartDCMotor plugin="ServiceCallPlugin"
-                    service="/motor_trig"/>
-      <DrawWire plugin="DrawWirePlugin"/>
-      <ReactiveFallback _description="Execute children until one succeeds or all fail">
-        <CheckWireValue plugin="CheckWireValuePlugin"
-                        min="0.024"
-                        max="0.026"/>
+    <Repeat num_cycles="9">
+      <ReactiveSequence>
+        <CheckZValue plugin="CheckZValuePlugin"
+                     min="-60"/>
+        <ActivateCrawlerMode plugin="ServiceCallPlugin"
+                             service="/activate"/>
+        <Fallback _description="Try each child in order, return success on first success">
+          <Parallel failure_threshold="1"
+                    success_threshold="">
+            <FollowWeld plugin="FollowWeldPlugin"/>
+            <CheckZValuePositive60 plugin="CheckZValuePlugin"
+                                   min="60"/>
+          </Parallel>
+        </Fallback>
+        <StopMyActuatorMotor plugin="ServiceCallPlugin"
+                             service="/crawler_control_node/motor_stop"/>
+        <ReduceLinearActuator plugin="ReduceLinearActuatorPlugin"
+                              value="25"/>
+        <StartDCMotor plugin="ServiceCallPlugin"
+                      service="/motor_trig"/>
+        <DrawWire plugin="DrawWirePlugin"/>
         <ReactiveFallback _description="Execute children until one succeeds or all fail">
-          <StopDCMotor service="/motor_trig"
-                       plugin="ServiceCallPlugin"/>
-          <IncreaseLinearActuator plugin="IncreaseLinearActuatorPlugin"
-                                  value="25"/>
+          <Parallel failure_threshold="1"
+                    success_threshold="">
+            <CheckWireValue plugin="CheckWireValuePlugin"
+                            min="0.024"
+                            max="0.026"/>
+            <ReactiveFallback _description="Execute children until one succeeds or all fail">
+              <Parallel failure_threshold="1"
+                        success_threshold="">
+                <StopDCMotor service="/motor_trig"
+                             plugin="ServiceCallPlugin"/>
+                <IncreaseLinearActuator plugin="IncreaseLinearActuatorPlugin"
+                                        value="25"/>
+              </Parallel>
+            </ReactiveFallback>
+          </Parallel>
         </ReactiveFallback>
-      </ReactiveFallback>
-      <StartMyActuatorMotor plugin="ServiceCallPlugin"
-                            service="/activate"/>
-      <FollowWeldToNegative60 plugin="FollowWeldPlugin"/>
-    </ReactiveFallback>
+        <StartMyActuatorMotor plugin="ServiceCallPlugin"
+                              service="/activate"/>
+        <FollowWeldToNegative60 plugin="FollowWeldPlugin"/>
+      </ReactiveSequence>
+    </Repeat>
   </BehaviorTree>
 
   <!-- Description of Node Models (used by Groot) -->
