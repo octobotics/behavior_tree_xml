@@ -1,72 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="3">
   <BehaviorTree ID="ReactiveBehaviorTree">
-    <Repeat num_cycles="9">
-      <ReactiveSequence>
-        <CheckZValue plugin="CheckZValuePlugin"
-                     min="-60"/>
-        <ActivateCrawlerMode plugin="ServiceCallPlugin"
-                             service="/activate"/>
-        <Fallback _description="Try each child in order, return success on first success">
-          <Parallel failure_threshold="1"
-                    success_threshold="">
-            <FollowWeld plugin="FollowWeldPlugin"/>
-            <CheckZValuePositive60 plugin="CheckZValuePlugin"
-                                   min="60"/>
-          </Parallel>
-        </Fallback>
-        <StopMyActuatorMotor plugin="ServiceCallPlugin"
-                             service="/crawler_control_node/motor_stop"/>
-        <ReduceLinearActuator plugin="ReduceLinearActuatorPlugin"
+    <ReactiveSequence>
+      <CheckZValuePositive60 plugin="CheckZValuePlugin"
+                             min="60"/>
+      <ReduceLinearActuator plugin="ReduceLinearActuatorPlugin"
+                            value="-25"/>
+      <StartDCMotor plugin="ServiceCallPlugin"
+                    service="/motor_trig"/>
+      <CheckWireValue plugin="CheckWireValuePlugin"
+                      min="0.024"
+                      max="0.026"/>
+      <StopDCMotor service="/motor_trig"
+                   plugin="ServiceCallPlugin"/>
+      <IncreaseLinearActuator plugin="IncreaseLinearActuatorPlugin"
                               value="25"/>
-        <StartDCMotor plugin="ServiceCallPlugin"
-                      service="/motor_trig"/>
-        <DrawWire plugin="DrawWirePlugin"/>
-        <ReactiveFallback _description="Execute children until one succeeds or all fail">
-          <Parallel failure_threshold="1"
-                    success_threshold="">
-            <CheckWireValue plugin="CheckWireValuePlugin"
-                            min="0.024"
-                            max="0.026"/>
-            <ReactiveFallback _description="Execute children until one succeeds or all fail">
-              <Parallel failure_threshold="1"
-                        success_threshold="">
-                <StopDCMotor service="/motor_trig"
-                             plugin="ServiceCallPlugin"/>
-                <IncreaseLinearActuator plugin="IncreaseLinearActuatorPlugin"
-                                        value="25"/>
-              </Parallel>
-            </ReactiveFallback>
-          </Parallel>
-        </ReactiveFallback>
-        <StartMyActuatorMotor plugin="ServiceCallPlugin"
-                              service="/activate"/>
-        <FollowWeldToNegative60 plugin="FollowWeldPlugin"/>
-      </ReactiveSequence>
-    </Repeat>
+    </ReactiveSequence>
   </BehaviorTree>
 
   <!-- Description of Node Models (used by Groot) -->
   <TreeNodesModel>
-    <Action ID="ActivateCrawlerMode"
-            editable="true">
-      <inout_port name="plugin"
-                  default="ServiceCallPlugin"/>
-      <inout_port name="service"
-                  default="/activate"/>
-    </Action>
     <Condition ID="CheckWireValue"
                editable="true">
       <input_port name="plugin"/>
       <input_port name="min"/>
       <input_port name="max"/>
-    </Condition>
-    <Condition ID="CheckZValue"
-               editable="true">
-      <input_port name="plugin"
-                  default="CheckZValuePlugin"/>
-      <input_port name="min"
-                  default="-60"/>
     </Condition>
     <Condition ID="CheckZValuePositive60"
                editable="true">
@@ -75,18 +33,6 @@
       <input_port name="min"
                   default="60"/>
     </Condition>
-    <Action ID="DrawWire"
-            editable="true">
-      <input_port name="plugin"/>
-    </Action>
-    <Action ID="FollowWeld"
-            editable="true">
-      <input_port name="plugin"/>
-    </Action>
-    <Action ID="FollowWeldToNegative60"
-            editable="true">
-      <input_port name="plugin"/>
-    </Action>
     <Action ID="IncreaseLinearActuator"
             editable="true">
       <input_port name="plugin"/>
@@ -102,22 +48,10 @@
       <input_port name="plugin"/>
       <input_port name="service"/>
     </Action>
-    <Action ID="StartMyActuatorMotor"
-            editable="true">
-      <input_port name="plugin"/>
-      <input_port name="service"/>
-    </Action>
     <Action ID="StopDCMotor"
             editable="true">
       <input_port name="service"/>
       <input_port name="plugin"/>
-    </Action>
-    <Action ID="StopMyActuatorMotor"
-            editable="true">
-      <inout_port name="plugin"
-                  default="ServiceCallPlugin"/>
-      <inout_port name="service"
-                  default="/crawler_control_node/motor_stop"/>
     </Action>
   </TreeNodesModel>
 
